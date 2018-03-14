@@ -125,7 +125,7 @@
         node.data: false
         #绑定地址
         network.host: 172.16.100.31
-        #该集群内的机器有男鞋
+        #该集群内的机器有哪些
         discovery.zen.ping.unicast.hosts: ["172.16.100.30", "172.16.130.31", "172.16.130.32"]
         #一个节点需要看到的具有master节点资格的最小数量，然后才能在集群中做操作。官方的推荐值是(N/2)+1
         discovery.zen.minimum_master_nodes: 2
@@ -134,11 +134,33 @@
         #其他的可在网上进行查找
         bootstrap.memory_lock: false
         bootstrap.system_call_filter: false
+
+        #主节点
+        cluster.name: search
+        node.name: node5
+        node.master: true
+        node.data: false
+        network.host: 172.16.100.31
+        discovery.zen.ping.unicast.hosts: ["172.16.100.30", "172.16.130.31", "172.16.130.32", "172.16.100.33", "172.16.100.36", "172.16.100.38"]
+        discovery.zen.minimum_master_nodes: 2
+        gateway.recover_after_nodes: 3
+        bootstrap.memory_lock: false
+        bootstrap.system_call_filter: false
+        #数据节点
+        cluster.name: search
+        node.name: node6
+        node.master: false
+        node.data: true
+        network.host: 172.16.100.32
+        discovery.zen.ping.unicast.hosts: ["172.16.100.30", "172.16.130.31", "172.16.130.32", "172.16.100.33", "172.16.100.36", "172.16.100.38"]
+        discovery.zen.minimum_master_nodes: 2
+        gateway.recover_after_nodes: 3
+        bootstrap.memory_lock: false
+        bootstrap.system_call_filter: false
+
         ```
 
-
         > 开始建立索引和文档类型(在装好ik的情况下,另外es系统缺省用户名密码为elastic:changeme)，以索引名somename举例
-
         ```bash
         #先建立somename_v1这个索引,参数都很好理解就不多说了
         curl -u elastic:changeme -XPUT 'http://172.16.100.30:9200/somename_v1' -d'
@@ -185,7 +207,6 @@
         ```
 
         > 建立文档映射（document_type类似表及其内部字段）
-
         ```
         curl  -u elastic:changeme  -XPUT 'http://172.16.100.30:9200/somename_v1/_mapping/mixdoc' -d'
         {
@@ -245,6 +266,12 @@
             }          
           }
         }'        
+        ```
+
+        > 删除、查看
+        ```
+        curl  -u elastic:changeme  -XDELETE '172.16.100.30:9200/tianjinwe_v1?pretty'
+        curl  -u elastic:changeme  -XGET '172.16.100.30:9200/tianjinwe?pretty'
         ```
 
         > 通过别名方式建立真正的somename这个doucment_type(这么做的好处是因为es不支持为document_type增加字段，如果增加就会全量索引，为了避免更迭出现的问题，用别名的方式建立最好，这样可以做成类似链表的接口，改变指针即可)
