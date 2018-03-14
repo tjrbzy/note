@@ -4,7 +4,7 @@
         > 通过监控生成的静态文件目录，或者在静态化期间将待搜索内容（标题，内容等）及相关联的资源（如外网访问的链接）存入ElasticSearch。ElasticSearch本身提供二进制包，可在 https://www.elastic.co/cn/ 进行下载。
 
     * ### 安装
-        ####前置
+        >前置
 
         ```bash
         #如果是centos这类系统，建议先做以下事情(ubuntu也差不多):
