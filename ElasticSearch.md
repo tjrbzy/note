@@ -29,7 +29,7 @@
         mkdir -p /data/elk
         ```
 
-        ####安装x-pack
+        >安装ik，x-pack等插件，ik是中文分词，需要安装到es下，x-pack是安全、监控等功能的官方插件（收费），是选择性使用的东西，用了后有漂亮的监控界面，不用也不影响系统正常使用，就是监控相应的情况麻烦。
         ```bash
         #安装elasticsearch logstash kibana        
 
@@ -42,10 +42,7 @@
         #https://license.elastic.co/registration申请基础许可license.json邮件
         #修改license文件: "type":"platinum" "expiry_date_in_millis":146128000000 一年后的时间戳
         #更新license文件: curl -XPUT -u elastic:changeme 'http://127.0.0.1:9200/_xpack/license' -d @license.json
-        ```
 
-        ####安装其他plugin
-        ```bash
         #elasticsearch-plugin安装分词
         bin/elasticsearch-plugin install file:///home/zzuser/elk/ik.zip
         #用elk用户启动
@@ -72,31 +69,7 @@
 
 
     * ### 配置
-        > 下面给出测试时的配置（个人喜好三主三数据这样的）        
-
-   * #### ElasticSearch配置
-        ```nginx
-        #集群名
-        cluster.name: search
-        #节点名称
-        node.name: node1
-        #是否为主节点
-        node.master: true
-        #是否为数据节点
-        node.data: false
-        #绑定地址
-        network.host: 172.16.100.31
-        #该集群内的机器有男鞋
-        discovery.zen.ping.unicast.hosts: ["172.16.100.30", "172.16.130.31", "172.16.130.32"]
-        #一个节点需要看到的具有master节点资格的最小数量，然后才能在集群中做操作。官方的推荐值是(N/2)+1
-        discovery.zen.minimum_master_nodes: 2
-        #设置集群中N个节点启动后进行数据恢复
-        gateway.recover_after_nodes: 3
-        #其他的可在网上进行查找
-        bootstrap.memory_lock: false
-        bootstrap.system_call_filter: false
-        ```
-   * #### logstash配置
+        >logstash配置
         ```nginx
         input {
           http{
@@ -140,7 +113,31 @@
 
         ```
 
-        > 下一步动作之前开始安装ik，x-pack等插件，ik是中文分词，需要安装到es下，x-pack是安全、监控等功能的官方插件（收费），是选择性使用的东西，用了后有漂亮的监控界面，不用也不影响系统正常使用，就是监控相应的情况麻烦。当然，有那啥。。。开始建立索引和文档类型(在装好ik的情况下,另外es系统缺省用户名密码为elastic:changeme)，以索引名somename举例
+        >ElasticSearch配置
+        ```nginx
+        #集群名
+        cluster.name: search
+        #节点名称
+        node.name: node1
+        #是否为主节点
+        node.master: true
+        #是否为数据节点
+        node.data: false
+        #绑定地址
+        network.host: 172.16.100.31
+        #该集群内的机器有男鞋
+        discovery.zen.ping.unicast.hosts: ["172.16.100.30", "172.16.130.31", "172.16.130.32"]
+        #一个节点需要看到的具有master节点资格的最小数量，然后才能在集群中做操作。官方的推荐值是(N/2)+1
+        discovery.zen.minimum_master_nodes: 2
+        #设置集群中N个节点启动后进行数据恢复
+        gateway.recover_after_nodes: 3
+        #其他的可在网上进行查找
+        bootstrap.memory_lock: false
+        bootstrap.system_call_filter: false
+        ```
+
+
+        > 开始建立索引和文档类型(在装好ik的情况下,另外es系统缺省用户名密码为elastic:changeme)，以索引名somename举例
 
         ```bash
         #先建立somename_v1这个索引,参数都很好理解就不多说了
