@@ -1,25 +1,37 @@
 
 * ## 搜索 
-    * ### 方案：采用ElasticSearch系列提供文章检索
     * ### <font color="red">ES前面是需要有反向代理的，因为这样会安全许多。不要让elasticSearch直接面对最前端，要在es前面架设2台，起码架设2台能做反向代理的WEB服务器。不是说你有F5或者其他负载均衡设备就可以了，当然了，除非你乐意在防火墙那层面对ES做专门的措施，比如在防火墙那里动态对访问ES的所有请求的HEADER都加上一个认证参数。否则的话，请一定在ES集群前架设两台反向代理用的WEB服务器。省钱的方案是弄两台装NGINX（或者衍生品）的服务器，每台除了NGINX还要配置LVS做好浮动IP（如果你有F5这类负载均衡，可以不用LVS，而由负载均衡代替浮动IP），记得在NGINX上配置访问ES的用户名密码。后面也会介绍一点KIBANA，这样的话，你就可以为ES增加不同的用户、密码以及相应的权限，给搜索用的用户权限一定要尽量低（注意安全补丁）</font>
         > 通过监控生成的静态文件目录，或者在静态化期间将待搜索内容（标题，内容等）及相关联的资源（如外网访问的链接）存入ElasticSearch。ElasticSearch本身提供二进制包，可在 https://www.elastic.co/cn/ 进行下载。
 
-        > 如果是centos这类系统，建议先做以下事情(ubuntu也差不多):
+    * ### 安装
 
         ```bash
+        #如果是centos这类系统，建议先做以下事情(ubuntu也差不多):
             vim etc/sysctrl.conf
-            fs.file-max = 1000000
-            vm.max_map_count=262144
-            vm.swappiness = 1
+              fs.file-max = 1000000
+              vm.max_map_count=262144
+              vm.swappiness = 1
 
             vim /etc/security/limits.conf
-            * soft nofile 65536
-            * hard nofile 131072
+              * soft nofile 65536
+              * hard nofile 131072
 
             vi /etc/security/limits.d/90-nproc.conf
-            *          soft    nproc     2048        
+              *          soft    nproc     2048        
+
+            #配置java1.8或者写到profile里source
+            export JAVA_HOME=/data/jdk1.8.0_151
+            export PATH=$JAVA_HOME/bin:$PATH
+            export CLASSPATH=.:$JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar
+
+            #新建用户elk 安装用root 运行用elk
+            groupadd elk
+            useradd elk -g elk
+            mkdir -p /data/elk
+
         ```
 
+    * ### 配置
         > 下面给出测试时的配置（个人喜好三主三数据这样的）        
 
    * #### ElasticSearch配置
