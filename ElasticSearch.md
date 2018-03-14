@@ -4,32 +4,72 @@
         > 通过监控生成的静态文件目录，或者在静态化期间将待搜索内容（标题，内容等）及相关联的资源（如外网访问的链接）存入ElasticSearch。ElasticSearch本身提供二进制包，可在 https://www.elastic.co/cn/ 进行下载。
 
     * ### 安装
+        ####前置
 
         ```bash
         #如果是centos这类系统，建议先做以下事情(ubuntu也差不多):
-            vim etc/sysctrl.conf
-              fs.file-max = 1000000
-              vm.max_map_count=262144
-              vm.swappiness = 1
+        vim etc/sysctrl.conf
+          fs.file-max = 1000000
+          vm.max_map_count=262144
+          vm.swappiness = 1
+        vim /etc/security/limits.conf
+          * soft nofile 65536
+          * hard nofile 131072
+        vi /etc/security/limits.d/90-nproc.conf
+          *          soft    nproc     2048        
 
-            vim /etc/security/limits.conf
-              * soft nofile 65536
-              * hard nofile 131072
+        #配置java1.8或者写到profile里source
+        export JAVA_HOME=/data/jdk1.8.0_151
+        export PATH=$JAVA_HOME/bin:$PATH
+        export CLASSPATH=.:$JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar
 
-            vi /etc/security/limits.d/90-nproc.conf
-              *          soft    nproc     2048        
-
-            #配置java1.8或者写到profile里source
-            export JAVA_HOME=/data/jdk1.8.0_151
-            export PATH=$JAVA_HOME/bin:$PATH
-            export CLASSPATH=.:$JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar
-
-            #新建用户elk 安装用root 运行用elk
-            groupadd elk
-            useradd elk -g elk
-            mkdir -p /data/elk
-
+        #新建用户elk 安装用root 运行用elk
+        groupadd elk
+        useradd elk -g elk
+        mkdir -p /data/elk
         ```
+
+        ####安装x-pack
+        ```bash
+        #安装elasticsearch logstash kibana        
+
+        #安装x-pack
+        bin/elasticsearch-plugin install file:///home/zzuser/elk/x-pack-5.6.3.zip
+        bin/logstash-plugin install file:///home/zzuser/elk/x-pack-5.6.3.zip
+        bin/kibana-plugin install file:///home/zzuser/elk/x-pack-5.6.3.zip
+        #破解x-pack
+        #启动elasticsearch再停止后，替换x-pack-5.6.3.jar
+        #https://license.elastic.co/registration申请基础许可license.json邮件
+        #修改license文件: "type":"platinum" "expiry_date_in_millis":146128000000 一年后的时间戳
+        #更新license文件: curl -XPUT -u elastic:changeme 'http://127.0.0.1:9200/_xpack/license' -d @license.json
+        ```
+
+        ####安装其他plugin
+        ```bash
+        #elasticsearch-plugin安装分词
+        bin/elasticsearch-plugin install file:///home/zzuser/elk/ik.zip
+        #用elk用户启动
+        vi elasticsearch.yml
+        bin/elasticsearch -d -v
+
+        #logstash-plugin安装http input
+        bin/logstash-plugin install logstash-input-http
+        #其他安装方法
+        #vi Gemfile >> gem "logstash-input-http", :path => "/root/logstash-input-http-master"
+        #bin/logstash-plugin install --no-verify
+        #yum install ruby
+        #yum install rubygems
+        #unzip master
+        #gem build xxx.gemspec 
+        #logstash-plugin install xxx.gem
+        #用elk用户启动 并指定配置文件
+        vi logstash.conf
+        bin/logstash -f config/logstash.conf
+
+        #kibana
+        bin/kibana
+        ```
+
 
     * ### 配置
         > 下面给出测试时的配置（个人喜好三主三数据这样的）        
